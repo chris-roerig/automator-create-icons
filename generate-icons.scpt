@@ -9,21 +9,25 @@ on run {input, parameters}
 			do shell script "mkdir -p " & quoted form of outputDir & "/mac.iconset"
 			do shell script "mkdir -p " & quoted form of outputDir & "/pngs"
 
+			-- create cropped temp file
+			set croppedFile to outputDir & "/" & fileName & "_cropped.png"
+			do shell script "/usr/local/bin/convert " & quoted form of inputFile & " -crop 770x760+128+132 +repage " & quoted form of croppedFile
+
 			-- macOS iconset sizes
 			set macSizes to {"16", "32", "64", "128", "256", "512", "1024"}
 			repeat with s in macSizes
-				do shell script "/usr/local/bin/convert " & quoted form of inputFile & " -resize " & s & "x" & s & " " & quoted form of (outputDir & "/mac.iconset/icon_" & s & "x" & s & ".png")
-				do shell script "/usr/local/bin/convert " & quoted form of inputFile & " -resize " & (s as integer) * 2 & "x" & (s as integer) * 2 & " " & quoted form of (outputDir & "/mac.iconset/icon_" & s & "x" & s & "@2x.png")
+				do shell script "/usr/local/bin/convert " & quoted form of croppedFile & " -resize " & s & "x" & s & " " & quoted form of (outputDir & "/mac.iconset/icon_" & s & "x" & s & ".png")
+				do shell script "/usr/local/bin/convert " & quoted form of croppedFile & " -resize " & (s as integer) * 2 & "x" & (s as integer) * 2 & " " & quoted form of (outputDir & "/mac.iconset/icon_" & s & "x" & s & "@2x.png")
 			end repeat
 
 			-- Linux PNG sizes
 			set linuxSizes to {"16", "24", "32", "48", "64", "128", "256", "512"}
 			repeat with s in linuxSizes
-				do shell script "/usr/local/bin/convert " & quoted form of inputFile & " -resize " & s & "x" & s & " " & quoted form of (outputDir & "/pngs/icon_" & s & ".png")
+				do shell script "/usr/local/bin/convert " & quoted form of croppedFile & " -resize " & s & "x" & s & " " & quoted form of (outputDir & "/pngs/icon_" & s & ".png")
 			end repeat
 
 			-- Generate Windows .ico
-			do shell script "/usr/local/bin/convert " & quoted form of inputFile & " -define icon:auto-resize=16,24,32,48,64,128,256 " & quoted form of (outputDir & "/" & fileName & ".ico")
+			do shell script "/usr/local/bin/convert " & quoted form of croppedFile & " -define icon:auto-resize=16,24,32,48,64,128,256 " & quoted form of (outputDir & "/" & fileName & ".ico")
 
 			-- Generate macOS .icns if iconutil exists
 			try
